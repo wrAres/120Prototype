@@ -1,5 +1,15 @@
-var game = new Phaser.Game(1144, 900, Phaser.AUTO);
+/* Zhengyang Zhang   zzhan127@ucsc.edu
+   Yibo Wang         ywang315@ucsc.edu
+   Shay Dong         sdong9@ucsc.edu
+   
+   
+   
+*/
 
+
+var game = new Phaser.Game(1144, 900, Phaser.AUTO);
+var tArray = [];
+var eArray = [];
 var MainMenu = function(game){};
 var GamePlay = function(game) {};
 var GameOver = function(game){};
@@ -17,7 +27,7 @@ var scoreT;
 var goldT;
 
 var slots = [[0,0,0,0,0,0,0,0,0,0,0],
-			 [0,0,0,0,0,0,0,0,0,0,0],
+			 [0,0,0,0,0,0,0,0,0,0,0],		// representation of the game board. keeping track which slots are empty.
 			 [1,1,0,0,0,0,0,0,0,0,0],
 			 [1,1,0,0,0,0,0,0,0,0,0],
 			 [0,0,0,0,0,0,0,0,0,0,0],
@@ -42,8 +52,14 @@ MainMenu.prototype = {
 			fill: "#ff0044",
 			align: "center"
 		});
-		
 		txt.anchor.setTo(0.5,0.5);
+		var prompt = game.add.text(50,50, 
+			"use mouse to control.\n Click on the card in grey bar and then click on the board to place turrets \n If elephant collide with your turret the turret will be destroyed. \n GameOver if elephant reaches the base.",
+			{
+			font: "30px Arial",
+			fill: "#ff0044",
+			align: "center"
+		});
 	},
 	update: function(){
 		if(game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)){
@@ -61,10 +77,13 @@ GamePlay.prototype = {
 		game.load.image('fence','assets/img/fence.png');
 		game.load.image('turret','assets/img/turret.png');
 		game.load.image('turretButton','assets/img/turretButton.png');
-		game.load.image('elephant','assets/img/elephant.png');
+		game.load.spritesheet('elephant','assets/img/elephant120.png', 230,120,6);
+		game.load.spritesheet('boar','assets/img/boar80.png', 120,80,5);
+		game.load.spritesheet('duck','assets/img/dodo35.png', 34,35,4);
 		game.load.image('bullet','assets/img/bullet1.png');
 		game.load.audio('fire',['assets/audio/fire.mp3','assets/audio/fire.ogg']);
 		game.load.audio('hit',['assets/audio/hit.mp3','assets/audio/hit.ogg']);
+		game.load.spritesheet('man', 'assets/img/man100.png', 95, 200, 5);
 		
 	},
 	create: function(){
@@ -82,44 +101,60 @@ GamePlay.prototype = {
 		base.scale.setTo(0.818,1.2);
 		base.anchor.setTo(0.5,0.5);
 		game.physics.arcade.enable(base);
-		turrets = game.add.group();
-		turrets.enableBody = true;
-		turrets.physicsBodyType = Phaser.Physics.ARCADE;
+
 		bullets = game.add.group();
 		bullets.enableBody = true;
-		//bullets.physicsBodyType = Phaser.Physics.ARCADE;
-		elephants = game.add.group();
-		elephants.enableBody = true;
-		//elephants.physicsBodyType = Phaser.Physics.ARCADE;
+
 		game.add.sprite(0,624,'bar');
 		var turretButton = game.add.button(212,664,'turretButton',this.placeTurret);
 		scoreT = game.add.text(16, 700, 'score: 0', { fontSize: '16px', fill: '#000' });
 		goldT = game.add.text(16, 730, 'gold: 100', { fontSize: '16px', fill: '#000' });
 	},
 	update: function(){
-		timer++;
-		if(timer %300 ==0){
-			var elephant = elephants.create(1200,Math.random()*624,'elephant');
-			elephant.scale.setTo(0.5,0.5);
-			elephant.anchor.setTo(0.5,0.5);
-			game.physics.arcade.moveToObject(elephant,base,35);
-			var elephant = elephants.create(1200,(Math.random()*6)*104,'elephant');
-			elephant.scale.setTo(0.5,0.5);
-			elephant.anchor.setTo(0.5,0.5);
-			game.physics.arcade.moveToObject(elephant,base,35);
+		timer++;			// the timer. 
+		if(timer %1346 ==0){
+			if(score>= 50){
+				var elephant = new Enemies(game, 'elephant', 0 , 0.5, 0, 150+score);
+				game.add.existing(elephant);
+				game.physics.enable(elephant);
+				eArray.push(elephant);
+				game.physics.arcade.moveToObject(elephant,base,35);
+			}
 		}
+		if(timer%658==0){
+			if(score>=30){
+				var boar = new Enemies(game, 'boar', 0 , 0.5, 0, 150);
+				game.add.existing(boar);
+				game.physics.enable(boar);
+				eArray.push(boar);
+				game.physics.arcade.moveToObject(boar,base,35);
+			}
+		}
+		if(timer%300 ==0){
+			var duck = new Enemies(game, 'duck', 0 , 1, 0, 100);
+			game.add.existing(duck);
+			game.physics.enable(duck);
+			eArray.push(duck);
+			game.physics.arcade.moveToObject(duck,base,35);
+		}
+	
 	
 		if(placeT){
 			if(game.input.mousePointer.isDown){
-				var mx = Math.round(game.input.x/104);
-				var my = Math.round(game.input.y/104);
-				if(my<6&&mx<12){
-					if(slots[my][mx] == 0 && gold >= 60){
-						object = turrets.create(Math.round(game.input.x/104)*104+52,Math.round(game.input.y/104)*104+52,'turret');
-						game.physics.enable(object, Phaser.Physics.ARCADE);
-						object.anchor.setTo(0.5,0.5);
+				var mx = Math.floor(game.input.x/104); //locate the nearest slot
+				var my = Math.floor(game.input.y/104);
+				if(my<6&&mx<12){ //check if the slot exist
+					if(slots[my][mx] == 0 && gold >= 60){	//check if slot is available and play has enough gold
+						tArray.push(0);
+						var currentT = timer;
+						console.log(currentT);
+						tArray[tArray.length-1] = new Player(game, 'man', 0, 0.5, 0, mx*104+52,my*104+52,currentT);
+						game.physics.enable(tArray[tArray.length-1]);
+						tArray[tArray.length-1].enableBody = true;
+						game.add.existing(tArray[tArray.length-1]);
+
 						turretN++;
-						slots[my][mx] = 1;
+						slots[my][mx] = 1;  //mark the slot unavailable
 						placeT = false;
 						gold = gold - 60;
 						goldT.text = 'gold: ' + gold;
@@ -127,21 +162,37 @@ GamePlay.prototype = {
 				}
 			}
 		}
-		for(var j = 0;j < elephants.children.length;j++){
-			for(var i = 0;i<turrets.children.length;i++){
-				if(timer%300 == 0){
-					bullet = bullets.create(turrets.children[i].body.x+30,turrets.children[i].y-10,'bullet');
-					var fire = game.add.audio('fire');
-					fire.play();
-					game.physics.arcade.moveToObject(bullet,elephants.children[j],200);
+		for(var i = 0; i< eArray.length;i++){
+			if(eArray[i] == null){
+				eArray.splice(i,1);
+			}
+		}
+		for(var i = 0;i<eArray.length;i++){
+			for(var j = 0;j < tArray.length;j++){
+			
+				if(eArray[i] == null){
+					console.log(eArray[i]);
+					eArray.splice(i,1);
+					
 				}
+				if((timer-tArray[j].getT())%225 == 0 &&eArray[i]!=null && tArray[j]!= null){
+						bullet = bullets.create(tArray[j].body.x+30,tArray[j].y-10,'bullet');
+						var fire = game.add.audio('fire');
+						tArray[j].attack();
+						fire.play();
+						game.physics.arcade.moveToObject(bullet,eArray[i],400);
+					
+					
+					
+				}	
 			}
 			break;
+			
 		}
-
-		game.physics.arcade.overlap(bullets, elephants, killElephant, null, this);
-		game.physics.arcade.overlap(elephants, turrets, turretDestroyed, null, this);
-		game.physics.arcade.overlap(elephants, base, gameOver, null, this);
+		
+		game.physics.arcade.overlap(bullets, eArray, killElephant, null, this);
+		game.physics.arcade.overlap(eArray, tArray, turretDestroyed, null, this);
+		game.physics.arcade.overlap(eArray, base, gameOver, null, this);
 	},
 	placeTurret: function(){
 		placeT = true;
@@ -153,21 +204,51 @@ function gameOver(elephant,base){
 	game.state.start('GameOver');
 }
 
-function killElephant(bullet,elephant){
-	elephant.destroy();
+function killElephant(elephant,bullet){
+	elephant.hitP = elephant.hitP - 50;
+	if(elephant.hitP <=0){
+		elephant.alive = false;
+		elephant.kill();
+	
+		for(var i = 0;i<eArray.length;i++){
+			console.log('hi'+i);
+			if(eArray[i].alive==false){
+				eArray.splice(i,1);
+				console.log('deleted');
+			}
+		}
+		
+		gold = gold + 10;
+		score = score + 10;
+		scoreT.text = 'score: ' + score;
+		goldT.text = 'gold: ' + gold;
+	}		
 	var hit = game.add.audio('hit');
 	hit.volume = 3;
 	hit.play();
 	bullet.kill();
-	gold = gold + 10;
-	score = score + 10;
-	scoreT.text = 'score: ' + score;
-	goldT.text = 'gold: ' + gold;
+
 }
 	
 function turretDestroyed(elephant,turret){
+	turret.alive = false;
 	turret.destroy();
-	elephant.destroy();
+	elephant.kill();
+	elephant.alive = false;
+	for(var i = 0;i<tArray.length;i++){
+			
+			if(tArray[i].alive==false){
+				tArray.splice(i,1);
+				
+			}
+	}
+	for(var i = 0;i<eArray.length;i++){
+			
+			if(eArray[i].alive==false){
+				eArray.splice(i,1);
+				
+			}
+	}
 	var hit = game.add.audio('hit');
 	hit.play();
 	slots[Math.round(game.input.x/104),Math.round(game.input.y/104)] = 1;
@@ -186,7 +267,7 @@ GameOver.prototype = {
 	},
 	update: function(){
 		if(game.input.keyboard.isDown(Phaser.Keyboard.ENTER)){
-			gold = 100;
+			gold = 100;  //reset upon restart
 			score = 0;
 			slots = [[0,0,0,0,0,0,0,0,0,0,0],
 			 [0,0,0,0,0,0,0,0,0,0,0],
@@ -196,6 +277,8 @@ GameOver.prototype = {
 			 [0,0,0,0,0,0,0,0,0,0,0]];
 			 timer = 0;
 			 game.state.start('GamePlay');
+			 eArray = [];
+			 tArray = [];
 		}
 	}
 }
