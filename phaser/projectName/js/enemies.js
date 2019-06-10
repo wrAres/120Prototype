@@ -20,10 +20,12 @@ Enemies = function (game, key, frame, scale, rotation, hp,type){
 		this.animations.add('attack',[0,1,2],100,false);
 	}
 }
-
+Enemies.prototype
 Enemies.prototype = Object.create(Phaser.Sprite.prototype);
 Enemies.prototype.constructor = Enemies;
-
+Enemies.prototype.key = function(){
+	return this.key;
+}
 Enemies.prototype.update = function() {
 	this.animations.play('walk');
 	if(this.type!=3){

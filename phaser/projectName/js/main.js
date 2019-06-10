@@ -100,7 +100,6 @@ Instruction.prototype = {
 		ins2.scale.setTo(0.5,0.5);
 		var ins3 = game.add.sprite(580, 570, 'ins3');
 		ins3.scale.setTo(0.5,0.5);
-		game.add.text(502, 500,'Click anywhere to start', {fontSize: '16px' , fill: '#000'});
 		
 	},
 	update: function(){
@@ -111,7 +110,8 @@ Instruction.prototype = {
 }
 GamePlay.prototype = {
 	preload: function(){
-		game.load.image('remove','assets/img/remove.png');		
+		game.load.image('remove','assets/img/remove.png');
+		
 		game.load.image('scoreboard','assets/img/scoreboard.png');
 		game.load.image('firelance','assets/img/firelance.png');
 		game.load.image('base','assets/img/zhangpeng3.png');
@@ -129,6 +129,26 @@ GamePlay.prototype = {
 		game.load.image('fireB','assets/img/fireBoard.png');
 		game.load.audio('fire',['assets/audio/fire.mp3','assets/audio/fire.ogg']);
 		game.load.audio('hit',['assets/audio/hit.mp3','assets/audio/hit.ogg']);
+		game.load.audio('base_destroyed',['assets/audio/base_destroyed.mp3','assets/audio/base_destroyed.ogg']);
+		game.load.audio('boar_attack',['assets/audio/boar_attack.mp3','assets/audio/boar_attack.ogg']);
+		game.load.audio('boar_death',['assets/audio/boar_death.mp3','assets/audio/boar_death.ogg']);
+		game.load.audio('building_destroyed',['assets/audio/building_destroyed.mp3','assets/audio/building_destroyed.ogg']);
+		game.load.audio('dodo_attack',['assets/audio/dodo_attack.mp3','assets/audio/dodo_attack.ogg']);
+		game.load.audio('dodo_death',['assets/audio/dodo_death.mp3','assets/audio/dodo_death.ogg']);
+		game.load.audio('dodo_fire_attack',['assets/audio/dodo_fire_attack.mp3','assets/audio/dodo_fire_attack.ogg']);
+		game.load.audio('elephant_attack',['assets/audio/elephant_attack.mp3','assets/audio/elephant_attack.ogg']);
+		game.load.audio('elephant_death',['assets/audio/elephant_death.mp3','assets/audio/elephant_death.ogg']);
+		game.load.audio('elephant_incoming',['assets/audio/elephant_incoming.mp3','assets/audio/elephant_incoming.ogg']);
+		game.load.audio('lance_hit',['assets/audio/lance_hit.mp3','assets/audio/lance_hit.ogg']);
+		game.load.audio('lance_throw',['assets/audio/lance_throw.mp3','assets/audio/lance_throw.ogg']);
+		game.load.audio('man_death',['assets/audio/man_death.mp3','assets/audio/man_death.ogg']);
+		game.load.audio('man_placement',['assets/audio/man_placement.mp3','assets/audio/man_placement.ogg']);
+		game.load.audio('notification',['assets/audio/notification.mp3','assets/audio/notification.ogg']);
+		game.load.audio('rock_throw',['assets/audio/rock_throw.mp3','assets/audio/rock_throw.ogg']);
+		game.load.audio('tower_build',['assets/audio/tower_build.mp3','assets/audio/tower_build.ogg']);
+		game.load.audio('tower_destroyed',['assets/audio/tower_destroyed.mp3','assets/audio/tower_destroyed.ogg']);
+		game.load.audio('upgrade',['assets/audio/upgrade.mp3','assets/audio/upgrade.ogg']);
+		
 		game.load.spritesheet('man', 'assets/img/man1.png', 235, 260, 5);
 		game.load.image('fireRock','assets/img/firerock.png');
 				
@@ -163,7 +183,7 @@ GamePlay.prototype = {
 		turretButton3.scale.setTo(0.25,0.25);
 		T1 = game.add.text(252, 820,'$40', {fontSize: '16px' , fill: '#000'});
 		T2 = game.add.text(402, 820,'$100', {fontSize: '16px' , fill: '#000'});
-		T3 = game.add.text(552, 820, '$10', { fontSize: '16px', fill: '#000' });
+		T3 = game.add.text(552, 820, '$30', { fontSize: '16px', fill: '#000' });
 		T4 = game.add.text(702, 820, '$50', { fontSize: '16px', fill: '#000' });
 		scoreT = game.add.text(130, 735, '0', { fontSize: '16px', fill: '#000' });
 		goldT = game.add.text(130, 765, '200', { fontSize: '16px', fill: '#000' });
@@ -193,6 +213,8 @@ GamePlay.prototype = {
 				game.physics.enable(sElephant);
 				eArray.push(sElephant);
 				game.physics.arcade.moveToObject(sElephant,base,35);
+				var elephant_incoming = game.add.audio('elephant_incoming');
+				elephant_incoming.play();
 			}
 		}
 		if(timer%2000==0){
@@ -211,6 +233,8 @@ GamePlay.prototype = {
 				game.physics.enable(elephant);
 				eArray.push(elephant);
 				game.physics.arcade.moveToObject(elephant,base,35);
+				var elephant_incoming = game.add.audio('elephant_incoming');
+				elephant_incoming.play();
 			}
 		}
 		if(timer%700==0){
@@ -257,6 +281,8 @@ GamePlay.prototype = {
 						console.log(currentT);
 						tArray[tArray.length-1] = new Player(game, 'man', 0, 0.5, 0, mx*100+32,my*100+152,currentT,0,mx,my,50,65);
 						game.physics.enable(tArray[tArray.length-1]);
+						var man_placement = game.add.audio('man_placement');
+						man_placement.play();
 						tArray[tArray.length-1].enableBody = true;
 						tArray[tArray.length-1].body.immovable = true;
 						game.add.existing(tArray[tArray.length-1]);
@@ -279,6 +305,8 @@ GamePlay.prototype = {
 						console.log(currentT);
 						tArray[tArray.length-1] = new Player(game, 'man1', 0, 0.5, 0, mx*100+32,my*100+152,currentT,1,mx,my,100,100);
 						game.physics.enable(tArray[tArray.length-1]);
+						var man_placement = game.add.audio('man_placement');
+						man_placement.play();
 						tArray[tArray.length-1].enableBody = true;
 						tArray[tArray.length-1].body.immovable = true;
 						game.add.existing(tArray[tArray.length-1]);
@@ -357,13 +385,12 @@ GamePlay.prototype = {
 							bullet = bullets.create(tArray[j].body.x+30,tArray[j].y-10,'bullet');
 						}else{
 							bullet = bullets.create(tArray[j].body.x+30,tArray[j].y-10,'fireRock');
-							bullet.anchor.setTo(0.5,0.5);
 						}
 						bullet.scale.setTo(0.5,0.5);
 						bullet.damage = tArray[j].damage;
-						var fire = game.add.audio('fire');
+						var rock_throw = game.add.audio('rock_throw');
 						tArray[j].attack();
-						fire.play();
+						rock_throw.play();
 						game.physics.arcade.moveToObject(bullet,eArray[i],400);
 					}else if(tArray[j].type == 1){
 						if(tArray[j].buff ==false){
@@ -377,9 +404,9 @@ GamePlay.prototype = {
 
 						
 						bullet.damage = tArray[j].damage;
-						var fire = game.add.audio('fire');
+						var lance_throw = game.add.audio('lance_throw');
 						tArray[j].attack();
-						fire.play();
+						lance_throw.play();
 						game.physics.arcade.moveToObject(bullet,eArray[i],600);
 					}					
 				}	
@@ -437,7 +464,18 @@ function killElephant(elephant,bullet){
 		score = score + Math.round(elephant.maxH/10);
 		elephant.alive = false;
 		elephant.kill();
-	
+		if(elephant.key=='duck'){
+			var dodo_death = game.add.audio('dodo_death');
+			dodo_death.play();
+		}
+		if(elephant.key=='superElephant'||elephant.key=='elephant'){
+			var elephant_death = game.add.audio('elephant_death');
+			elephant_death.play();
+		}
+		if(elephant.key=='boar'||elephant.key=='boar+'){
+			var boar_death = game.add.audio('boar_death');
+			boar_death.play();
+		}
 		for(var i = 0;i<eArray.length;i++){
 			console.log('hi'+i);
 			if(eArray[i].alive==false){

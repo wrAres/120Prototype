@@ -30,6 +30,35 @@ function Player(game, key, frame, scale, rotation,x,y,t,type,mx,my,hp,damage){
 	}
 	
 }
+/*function changePlayer(Player,game,key){
+	this.level = Player.level;
+	this.maxHp = Player.hp;
+	Phaser.Sprite.call(this, game, x,y, key, frame);
+	this.damage = Player.damage*1.1;
+	this.mx = Player.mx;
+	this.my = Player.my;
+	this.time = Player.t;				
+	this.anchor.set(0.5);
+	this.scale.x = Player.scale;
+	this.scale.y = Player.scale;
+	this.rotation = Player.rotation;
+	this.alive = true;
+	this.type = Player.type;
+	this.hp = Player.hp+150;
+	game.physics.enable(this);
+	this.buff = false;
+	this.baseDamage = Player.damage;
+	this.buffDamage = Math.round(this.baseDamage*1.2);
+	if(type!=2){
+		this.animations.add('attack',[2,3,4,0],10,false);
+	}
+	if(type == 3){
+		this.animations.add('fire',[0,1],10,true);
+	}
+	for(int i = 0;i<11;i++){
+		for(int j=0;j<6;j++)
+	}
+}*/
 
 Player.prototype = Object.create(Phaser.Sprite.prototype);
 Player.prototype.constructor = Player;
